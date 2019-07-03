@@ -1,0 +1,35 @@
+version: '3'
+services:
+  wordpress:
+    image: wordpress
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: db1usr
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_wp_password 
+      WORDPRESS_DB_NAME: wpdb167
+    depends_on:
+      - db
+    secrets:
+      - db_wp_password
+#    volumes:
+#      - themes:/var/www/html/wp-content/themes
+  db:
+    image: mysql:5.7.26
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password 
+      MYSQL_DATABASE: wpdb167
+      MYSQL_USER: db1usr
+      MYSQL_PASSWORD_FILE: /run/secrets/db_wp_password
+    secrets:
+      - db_root_password
+      - db_wp_password 
+
+volumes:
+  db_data: {}
+#  themes: {}
