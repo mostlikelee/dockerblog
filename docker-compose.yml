@@ -1,7 +1,7 @@
-version: '3'
+version: '3.1'
 services:
   wordpress:
-    image: wordpress
+    image: wordpress:latest
     restart: always
     ports:
       - "80:80"
@@ -14,10 +14,14 @@ services:
       - db
     secrets:
       - db_wp_password
+    networks:
+      mysql_internal:
+        aliases: ["db"]
+      wordpress_public:
 #    volumes:
 #      - themes:/var/www/html/wp-content/themes
   db:
-    image: mysql:5.7.26
+    image: mysql:5.7
     restart: always
     volumes:
       - db_data:/var/lib/mysql
@@ -26,10 +30,37 @@ services:
       MYSQL_DATABASE: wpdb167
       MYSQL_USER: db1usr
       MYSQL_PASSWORD_FILE: /run/secrets/db_wp_password
+    networks:
+      mysql_internal:
+        aliases: ["wordpress"]
     secrets:
       - db_root_password
       - db_wp_password 
 
+  watchtower:
+    image: v2tec/watchtower
+    restart: always
+    depends_on:
+      - wordpress
+      - db
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      mysql_internal:
+      wordpress_public:
+
+secrets:
+  db_root_password:
+    file: secrets/db_root_password.txt
+  db_wp_password:
+    file: secrets/db_wp_password.txt
+
+networks:
+  mysql_internal:
+    driver: "overlay"
+    internal: true
+  wordpress_public:
+    driver: "overlay"
 volumes:
   db_data: {}
 #  themes: {}
