@@ -5,6 +5,7 @@ services:
     restart: always
     ports:
       - "80:80"
+    entrypoint: /startup.sh
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: db1usr
@@ -18,8 +19,10 @@ services:
       mysql_internal:
         aliases: ["db"]
       wordpress_public:
-#    volumes:
-#      - themes:/var/www/html/wp-content/themes
+    volumes:
+      - wp-content:/var/www/html/wp-content
+      - ./startup.sh:/startup.sh
+    working_dir: /var/www/html
   db:
     image: mysql:5.7
     restart: always
@@ -63,4 +66,4 @@ networks:
     driver: "overlay"
 volumes:
   db_data: {}
-#  themes: {}
+  wp-content: {}
